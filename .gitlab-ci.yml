@@ -1,7 +1,7 @@
 variables:
   UV_VERSION: 0.9
   PYTHON_VERSION: 3.14
-  BASE_LAYER: bookworm-slim
+  BASE_LAYER: bookworm
   UV_CACHE_DIR: .uv-cache
   UV_SYSTEM_PYTHON: 1
 
