@@ -45,6 +45,20 @@ def test_check_term_let_scope():
         check_term(term, context)
 
 
+def test_check_term_let_scope_pos():
+    term = Let(
+        bindings=[
+            ("y", Reference(name="x")),
+            ("x", Immediate(value=0)),
+        ],
+        body=Reference(name="y"),
+    )
+
+    context: Context = {}
+
+    check_term(term, context)
+
+
 def test_check_term_let_duplicate_binders():
     term = Let(
         bindings=[
@@ -60,6 +74,20 @@ def test_check_term_let_duplicate_binders():
         check_term(term, context)
 
 
+def test_check_term_let_duplicate_values():
+    term = Let(
+        bindings=[
+            ("y", Immediate(value=0)),
+            ("x", Immediate(value=0)),
+        ],
+        body=Immediate(value=0),
+    )
+
+    context: Context = {}
+
+    check_term(term, context)
+
+
 def test_check_term_letrec():
     term = LetRec(
         bindings=[
@@ -71,7 +99,6 @@ def test_check_term_letrec():
     context: Context = {}
 
     check_term(term, context)
-
 
 
 def test_check_term_letrec_scope():
@@ -86,7 +113,6 @@ def test_check_term_letrec_scope():
     context: Context = {}
 
     check_term(term, context)
-
 
 
 def test_check_term_letrec_duplicate_binders():
@@ -104,6 +130,19 @@ def test_check_term_letrec_duplicate_binders():
         check_term(term, context)
 
 
+def test_check_term_letrec_duplicate_values():
+    term = LetRec(
+        bindings=[
+            ("y", Immediate(value=0)),
+            ("x", Immediate(value=0)),
+        ],
+        body=Immediate(value=0),
+    )
+
+    context: Context = {}
+
+    check_term(term, context)
+
 
 def test_check_term_reference_bound():
     term = Reference(name="x")
@@ -115,7 +154,6 @@ def test_check_term_reference_bound():
     check_term(term, context)
 
 
-
 def test_check_term_reference_free():
     term = Reference(name="x")
 
@@ -123,7 +161,6 @@ def test_check_term_reference_free():
 
     with pytest.raises(ValueError):
         check_term(term, context)
-
 
 
 def test_check_term_abstract():
@@ -137,7 +174,6 @@ def test_check_term_abstract():
     check_term(term, context)
 
 
-
 def test_check_term_abstract_duplicate_parameters():
     term = Abstract(
         parameters=["x", "x"],
@@ -148,7 +184,6 @@ def test_check_term_abstract_duplicate_parameters():
 
     with pytest.raises(ValueError):
         check_term(term, context)
-
 
 
 def test_check_term_apply():
@@ -164,14 +199,12 @@ def test_check_term_apply():
     check_term(term, context)
 
 
-
 def test_check_term_immediate():
     term = Immediate(value=0)
 
     context: Context = {}
 
     check_term(term, context)
-
 
 
 def test_check_term_primitive():
@@ -184,7 +217,6 @@ def test_check_term_primitive():
     context: Context = {}
 
     check_term(term, context)
-
 
 
 def test_check_term_branch():
@@ -201,7 +233,6 @@ def test_check_term_branch():
     check_term(term, context)
 
 
-
 def test_check_term_allocate():
     term = Allocate(count=0)
 
@@ -209,6 +240,14 @@ def test_check_term_allocate():
 
     check_term(term, context)
 
+
+def test_check_term_allocate_less_than_0():
+    term = Allocate(count=-1)
+
+    context: Context = {}
+
+    with pytest.raises(ValueError):
+        check_term(term, context)
 
 
 def test_check_term_load():
@@ -223,6 +262,19 @@ def test_check_term_load():
 
     check_term(term, context)
 
+
+def test_check_term_load_bad_index():
+    term = Load(
+        base=Reference(name="x"),
+        index=-1,
+    )
+
+    context: Context = {
+        "x": None,
+    }
+
+    with pytest.raises(ValueError):
+        check_term(term, context)
 
 
 def test_check_term_store():
@@ -239,6 +291,20 @@ def test_check_term_store():
     check_term(term, context)
 
 
+def test_check_term_store_bad_index():
+    term = Store(
+        base=Reference(name="x"),
+        index=-1,
+        value=Immediate(value=0),
+    )
+
+    context: Context = {
+        "x": None,
+    }
+
+    with pytest.raises(ValueError):
+        check_term(term, context)
+
 
 def test_check_term_begin():
     term = Begin(
@@ -251,7 +317,6 @@ def test_check_term_begin():
     check_term(term, context)
 
 
-
 def test_check_program():
     program = Program(
         parameters=[],
@@ -259,7 +324,6 @@ def test_check_program():
     )
 
     check_program(program)
-
 
 
 def test_check_program_duplicate_parameters():
