@@ -9,5 +9,12 @@
     "editor.defaultFormatter": "charliermarsh.ruff"
   },
   "ruff.configuration": "pyproject.toml",
-  "python.analysis.typeCheckingMode": "strict"
+  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.extraPaths": [
+    "/opt/anaconda3/lib/python3.12/site-packages/pandas/__init__.py",
+    "/opt/anaconda3/lib/python3.12/site-packages",
+    "/env/lib/python3.9/site-packages",
+    "./packages/L3/src",
+    "./packages/util/src"
+  ]
 }

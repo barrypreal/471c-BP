@@ -23,6 +23,20 @@ from .syntax import (
 type Context = Mapping[Identifier, None]
 
 
+def check_program(
+    program: Program,
+) -> None:
+    match program:
+        case Program(parameters=parameters, body=body):
+            counts = Counter(parameters)
+            duplicates = {name for name, count in counts.items() if count > 1}
+            if duplicates:
+                raise ValueError(f"duplicate parameters: {duplicates}")
+
+            local = dict.fromkeys(parameters, None)
+            check_term(body, context=local)
+
+
 def check_term(
     term: Term,
     context: Context,
@@ -76,17 +90,25 @@ def check_term(
         case Immediate(value=_value):
             pass
 
-        case Primitive(operator=_operator, left=left, right=right):
+        case Primitive(operator=operator, left=left, right=right):
+            valid_operators = ["+", "-", "*"]
+            if operator not in valid_operators:
+                raise ValueError(f"invalid operator: {operator}")
+
             recur(left)
             recur(right)
 
-        case Branch(operator=_operator, left=left, right=right, consequent=consequent, otherwise=otherwise):
+        case Branch(operator=operator, left=left, right=right, consequent=consequent, otherwise=otherwise):
+            valid_operators = ["<", "=="]
+            if operator not in valid_operators:
+                raise ValueError(f"invalid operator: {operator}")
+
             recur(left)
             recur(right)
             recur(consequent)
             recur(otherwise)
 
-        case Allocate(count=_count):
+        case Allocate():
             pass
 
         case Load(base=base, index=_index):
