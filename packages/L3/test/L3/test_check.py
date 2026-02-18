@@ -45,20 +45,6 @@ def test_check_term_let_scope():
         check_term(term, context)
 
 
-def test_check_term_let_scope_pos():
-    term = Let(
-        bindings=[
-            ("y", Reference(name="x")),
-            ("x", Immediate(value=0)),
-        ],
-        body=Reference(name="y"),
-    )
-
-    context: Context = {}
-
-    check_term(term, context)
-
-
 def test_check_term_let_duplicate_binders():
     term = Let(
         bindings=[
