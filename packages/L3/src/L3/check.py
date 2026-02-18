@@ -76,11 +76,11 @@ def check_term(
         case Immediate(value=_value):
             pass
 
-        case Primitive(operator=operator, left=left, right=right):
+        case Primitive(operator=_operator, left=left, right=right):
             recur(left)
             recur(right)
 
-        case Branch(operator=operator, left=left, right=right, consequent=consequent, otherwise=otherwise):
+        case Branch(operator=_operator, left=left, right=right, consequent=consequent, otherwise=otherwise):
             recur(left)
             recur(right)
             recur(consequent)
