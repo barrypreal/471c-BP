@@ -241,15 +241,6 @@ def test_check_term_allocate():
     check_term(term, context)
 
 
-def test_check_term_allocate_less_than_0():
-    term = Allocate(count=-1)
-
-    context: Context = {}
-
-    with pytest.raises(ValueError):
-        check_term(term, context)
-
-
 def test_check_term_load():
     term = Load(
         base=Reference(name="x"),
@@ -261,20 +252,6 @@ def test_check_term_load():
     }
 
     check_term(term, context)
-
-
-def test_check_term_load_bad_index():
-    term = Load(
-        base=Reference(name="x"),
-        index=-1,
-    )
-
-    context: Context = {
-        "x": None,
-    }
-
-    with pytest.raises(ValueError):
-        check_term(term, context)
 
 
 def test_check_term_store():
@@ -289,21 +266,6 @@ def test_check_term_store():
     }
 
     check_term(term, context)
-
-
-def test_check_term_store_bad_index():
-    term = Store(
-        base=Reference(name="x"),
-        index=-1,
-        value=Immediate(value=0),
-    )
-
-    context: Context = {
-        "x": None,
-    }
-
-    with pytest.raises(ValueError):
-        check_term(term, context)
 
 
 def test_check_term_begin():

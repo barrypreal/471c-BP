@@ -86,20 +86,13 @@ def check_term(
             recur(consequent)
             recur(otherwise)
 
-        case Allocate(count=count):
-            if count < 0:
-                raise ValueError(f"count less than zero: {count}")
+        case Allocate():
+            pass
 
-        case Load(base=base, index=index):
-            if index < 0:
-                raise ValueError(f"index less than zero: {index}")
-
+        case Load(base=base, index=_index):
             recur(base)
 
-        case Store(base=base, index=index, value=value):
-            if index < 0:
-                raise ValueError(f"index less than zero: {index}")
-
+        case Store(base=base, index=_index, value=value):
             recur(base)
             recur(value)
 
