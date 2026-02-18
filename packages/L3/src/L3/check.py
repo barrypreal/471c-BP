@@ -1,3 +1,4 @@
+from collections import Counter
 from collections.abc import Mapping
 from functools import partial
 
@@ -13,12 +14,27 @@ from .syntax import (
     LetRec,
     Load,
     Primitive,
+    Program,
     Reference,
     Store,
     Term,
 )
 
 type Context = Mapping[Identifier, None]
+
+
+def check_program(
+    program: Program,
+) -> None:
+    match program:
+        case Program(parameters=parameters, body=body):
+            counts = Counter(parameters)
+            duplicates = {name for name, count in counts.items() if count > 1}
+            if duplicates:
+                raise ValueError(f"duplicate parameters: {duplicates}")
+
+            local = dict.fromkeys(parameters, None)
+            check_term(body, context=local)
 
 
 def check_term(
@@ -28,38 +44,82 @@ def check_term(
     recur = partial(check_term, context=context)  # noqa: F841
 
     match term:
-        case Let():
-            pass
+        case Let(bindings=bindings, body=body):
+            counts = Counter(name for name, _ in bindings)
+            duplicates = {name for name, count in counts.items() if count > 1}
+            if duplicates:
+                raise ValueError(f"duplicate binders : {duplicates}")
 
-        case LetRec():
-            pass
+            for __, value in bindings:
+                recur(value)
 
-        case Reference():
-            pass
+            local = dict.fromkeys([name for name, _ in bindings])
+            recur(body, context={**context, **local})
 
-        case Abstract():
-            pass
+        case LetRec(bindings=bindings, body=body):
+            counts = Counter(name for name, _ in bindings)
+            duplicates = {name for name, count in counts.items() if count > 1}
+            if duplicates:
+                raise ValueError(f"duplicate binders : {duplicates}")
 
-        case Apply():
-            pass
+            local = dict.fromkeys([name for name, _ in bindings])
 
-        case Immediate():
-            pass
+            for name, value in bindings:
+                recur(value, context={**context, **local})
 
-        case Primitive():
-            pass
+            check_term(body, {**context, **local})
 
-        case Branch():
-            pass
+        case Reference(name=name):
+            if name not in context:
+                raise ValueError(f"unknown variable: {name}")
+
+        case Abstract(parameters=parameters, body=body):
+            counts = Counter(parameters)
+            duplicates = {name for name, count in counts.items() if count > 1}
+            if duplicates:
+                raise ValueError(f"duplicate parameters: {duplicates}")
+
+            local = dict.fromkeys(parameters, None)
+            recur(body, context={**context, **local})
+
+        case Apply(target=target, arguments=arguments):
+            recur(target)
+            for argument in arguments:
+                recur(argument)
+
+        case Immediate(value=value):
+            if value not in context:
+                raise ValueError(f"unknown number: {value}")
+
+        case Primitive(operator=operator, left=left, right=right):
+            valid_operators = ["+", "-", "*"]
+            if operator not in valid_operators:
+                raise ValueError(f"invalid operator: {operator}")
+
+            recur(left)
+            recur(right)
+
+        case Branch(operator=operator, left=left, right=right, consequent=consequent, otherwise=otherwise):
+            valid_operators = ["<", "=="]
+            if operator not in valid_operators:
+                raise ValueError(f"invalid operator: {operator}")
+
+            recur(left)
+            recur(right)
+            recur(consequent)
+            recur(otherwise)
 
         case Allocate():
             pass
 
-        case Load():
-            pass
+        case Load(base=base, index=_index):
+            recur(base)
 
-        case Store():
-            pass
+        case Store(base=base, index=_index, value=value):
+            recur(base)
+            recur(value)
 
-        case Begin():  # pragma: no branch
-            pass
+        case Begin(effects=effects, value=value):  # pragma: no branch
+            for effect in effects:
+                recur(effect)
+            recur(value)
