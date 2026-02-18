@@ -87,9 +87,8 @@ def check_term(
             for argument in arguments:
                 recur(argument)
 
-        case Immediate(value=value):
-            if value not in context:
-                raise ValueError(f"unknown number: {value}")
+        case Immediate(value=_value):
+            pass
 
         case Primitive(operator=operator, left=left, right=right):
             valid_operators = ["+", "-", "*"]
