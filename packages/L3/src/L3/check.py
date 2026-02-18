@@ -77,18 +77,10 @@ def check_term(
             pass
 
         case Primitive(operator=operator, left=left, right=right):
-            valid_operators = ["+", "-", "*"]
-            if operator not in valid_operators:
-                raise ValueError(f"invalid operator: {operator}")
-
             recur(left)
             recur(right)
 
         case Branch(operator=operator, left=left, right=right, consequent=consequent, otherwise=otherwise):
-            valid_operators = ["<", "=="]
-            if operator not in valid_operators:
-                raise ValueError(f"invalid operator: {operator}")
-
             recur(left)
             recur(right)
             recur(consequent)
