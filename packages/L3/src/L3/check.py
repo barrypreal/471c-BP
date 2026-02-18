@@ -41,16 +41,16 @@ def check_term(
     term: Term,
     context: Context,
 ) -> None:
-    recur = partial(check_term, context=context)  # noqa: F841
+    recur = partial(check_term, context=context)
 
     match term:
         case Let(bindings=bindings, body=body):
             counts = Counter(name for name, _ in bindings)
-            duplicates = {name for name, count in counts.items() if count > 1}
+            duplicates = {name: count for name, count in counts.items() if count > 1}
             if duplicates:
-                raise ValueError(f"duplicate binders : {duplicates}")
+                raise ValueError(f"duplicate binders: {duplicates}")
 
-            for __, value in bindings:
+            for _, value in bindings:
                 recur(value)
 
             local = dict.fromkeys([name for name, _ in bindings])
@@ -58,9 +58,9 @@ def check_term(
 
         case LetRec(bindings=bindings, body=body):
             counts = Counter(name for name, _ in bindings)
-            duplicates = {name for name, count in counts.items() if count > 1}
+            duplicates = {name: count for name, count in counts.items() if count > 1}
             if duplicates:
-                raise ValueError(f"duplicate binders : {duplicates}")
+                raise ValueError(f"duplicate binders: {duplicates}")
 
             local = dict.fromkeys([name for name, _ in bindings])
 
@@ -122,3 +122,17 @@ def check_term(
             for effect in effects:
                 recur(effect)
             recur(value)
+
+
+def check_program(
+    program: Program,
+) -> None:
+    match program:
+        case Program(parameters=parameters, body=body):  # pragma: no branch
+            counts = Counter(parameters)
+            duplicates = {name for name, count in counts.items() if count > 1}
+            if duplicates:
+                raise ValueError(f"duplicate parameters: {duplicates}")
+
+            local = dict.fromkeys(parameters, None)
+            check_term(body, context=local)
