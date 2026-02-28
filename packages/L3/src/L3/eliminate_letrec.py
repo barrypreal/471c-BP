@@ -23,15 +23,6 @@ def eliminate_letrec_term(
             )
 
         case L3.LetRec(bindings=bindings, body=body):
-            # newBindings = [{name : L2.Allocate(count = 1) for name, _value in bindings}]
-
-            # memSpots = [name for name, _value in bindings]
-
-            # for name in memSpots:
-            # name = Allocate(count=1)
-
-            # newBindings = [(name, value) for name, value in bindings]
-
             return L2.Let(
                 bindings=([(name, recur(value)) for name, value in bindings]),
                 body=recur(body),
