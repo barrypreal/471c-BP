@@ -1,5 +1,8 @@
-program : "(" PROGRAM "(" parameters ")" term ")"
-parameters : IDENTIFIER*
+%import common.WS
+%ignore WS
+
+program     : "(" PROGRAM "(" parameters ")" term ")"
+parameters  : IDENTIFIER*
 
 term        : let
             | letrec
@@ -15,40 +18,40 @@ term        : let
             | begin
 
 
-let     : "(" LET "(" bindings ")" term ")"
+let         : "(" LET "(" bindings ")" term ")"
 
-letrec  : "(" LETREC "(" bindings ")" term ")"
+letrec      : "(" LETREC "(" bindings ")" term ")"
 
-bindings : binding*
-binding : IDENTIFIER term
 
-reference : IDENTIFIER
+
+bindings    : binding* 
+binding    : "(" IDENTIFIER term ")"
+
+reference   : IDENTIFIER
 
 abstract : "(" LAMBDA "(" parameters ")" term ")"
 
-"(" "(" ")" ")"
-
 apply : "(" term arguments ")"
 
-arguments : term*
+arguments : argument*
+argument : term
 
-immediate : integer
-
-integer : /[0-9]+-/
+immediate : INTEGER
 
 primitive : "(" PRIMITIVE term term ")"
 
-branch : "(" IF "(" BRANCH term~2 ")" term~2 ")"
+branch : "(if (" BRANCH term term ")" term term ")"
 
-allocate : "(" ALLOCATE natural ")"
+allocate.2 : "(allocate " NATURAL ")"
 
-natural : /[0-9]+/
+load.2 : "(load " term NATURAL ")"
 
-load : "(" LOAD term natural ")"
+store.2 : "(store " term NATURAL term ")"
 
-store : "(" STORE term natural term ")"
-
-begin : "(" BEGIN term* term ")"
+begin.2 : "(begin " effects value ")"
+value.2 : term
+effects : effect*
+effect : term
 
 PROGRAM.2 : "l3"
 LET.2 : "let" | "LET"
@@ -60,7 +63,10 @@ BRANCH.2 : "<" | "=="
 ALLOCATE.2 : "allocate"
 LOAD.2 : "load"
 STORE.2 : "store"
+BEGIN.2 : "begin"
+INTEGER.2 : /[+-]?(0|[1-9][0-9]*)/
+NATURAL.2 : /[+]?(0|[1-9][0-9]*)/
 
 
-IDENTIFIER : /[a-zA-Z_][a-zA-Z0-9_]*/
+IDENTIFIER  : /[a-zA-Z_][a-zA-Z0-9_]*/
 
