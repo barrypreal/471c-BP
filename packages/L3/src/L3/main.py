@@ -53,6 +53,3 @@ def main(
     if optimize:
         l2 = optimize_program(l2)
 
-    module = to_ast_program(l1)
-
-    (output or input.with_suffix(".py")).write_text(module)
