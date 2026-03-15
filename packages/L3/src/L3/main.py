@@ -8,8 +8,6 @@ from L2.optimize import optimize_program
 from .check import check_program
 from .eliminate_letrec import eliminate_letrec_program
 from .parse import parse_program
-from .uniqify import uniqify_program
-
 
 @click.command(
     context_settings=dict(
@@ -50,8 +48,6 @@ def main(
 
     if check:
         check_program(l3)
-
-    fresh, l3 = uniqify_program(l3)
 
     l2 = eliminate_letrec_program(l3)
 
