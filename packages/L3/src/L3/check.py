@@ -86,7 +86,7 @@ def check_term(
             recur(consequent)
             recur(otherwise)
 
-        case Allocate(count=_count):
+        case Allocate():
             pass
 
         case Load(base=base, index=_index):

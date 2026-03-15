@@ -9,5 +9,10 @@
     "editor.defaultFormatter": "charliermarsh.ruff"
   },
   "ruff.configuration": "pyproject.toml",
-  "python.analysis.typeCheckingMode": "strict"
+  "python.analysis.typeCheckingMode": "strict",
+  "python.testing.pytestArgs": [
+    "."
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
 }

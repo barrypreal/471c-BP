@@ -60,6 +60,20 @@ def test_check_term_let_duplicate_binders():
         check_term(term, context)
 
 
+def test_check_term_let_duplicate_values():
+    term = Let(
+        bindings=[
+            ("y", Immediate(value=0)),
+            ("x", Immediate(value=0)),
+        ],
+        body=Immediate(value=0),
+    )
+
+    context: Context = {}
+
+    check_term(term, context)
+
+
 def test_check_term_letrec():
     term = LetRec(
         bindings=[
@@ -100,6 +114,20 @@ def test_check_term_letrec_duplicate_binders():
 
     with pytest.raises(ValueError):
         check_term(term, context)
+
+
+def test_check_term_letrec_duplicate_values():
+    term = LetRec(
+        bindings=[
+            ("y", Immediate(value=0)),
+            ("x", Immediate(value=0)),
+        ],
+        body=Immediate(value=0),
+    )
+
+    context: Context = {}
+
+    check_term(term, context)
 
 
 def test_check_term_reference_bound():
