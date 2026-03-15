@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import click
-from L1.to_python import to_ast_program
 from L2.optimize import optimize_program
 
 from .check import check_program
