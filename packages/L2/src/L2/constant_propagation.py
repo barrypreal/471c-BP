@@ -26,12 +26,12 @@ def constant_propagation_term(
             match body:
                 case Primitive(operator=operator, left=left, right=right):
                     for name, value in bindings:
-                        if name == left:
+                        if Reference(name=name) == left:
                             left = value
-                        if name == right:
+                        if Reference(name=name) == right:
                             right = value
 
-                    return Primitive(operator=operator, left=recur(left), right=recur(right))
+                    return Let(bindings=bindings, body=Primitive(operator=operator, left=left, right=right))
 
                 case _:
                     return Let(bindings=[(name, recur(value)) for name, value in bindings], body=recur(body))
@@ -71,5 +71,3 @@ def constant_propagation_term(
 
         case Begin(effects=effects, value=value):  # pragma: no branch
             return Begin(effects=[recur(effect) for effect in effects], value=recur(value))
-
-    return term

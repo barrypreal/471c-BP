@@ -6,6 +6,7 @@ from .syntax import (
     Apply,
     Begin,
     Branch,
+    Identifier,
     Immediate,
     Let,
     Load,
@@ -13,18 +14,21 @@ from .syntax import (
     Reference,
     Store,
     Term,
-    Identifier,
 )
 
+
 def clean_vars(
-        term: Term,
-        refer: Identifier,
-) -> bool : 
+    term: Term,
+    refer: Identifier,
+) -> bool:
     recur = partial(clean_vars)
 
     match term:
-        case Let(bindings=_bindings, body=_body):
-            dead_code_elim_term(term)
+        case Let(bindings=bindings, body=body):
+            for name, value in bindings:
+                if name == refer or recur(value, refer):
+                    return True
+            return recur(body, refer)
 
         case Reference(name=name):
             return refer == name
@@ -33,38 +37,34 @@ def clean_vars(
             return recur(body, refer)
 
         case Apply(target=target, arguments=arguments):
-            return recur(target, refer) or 
+            for argument in arguments:
+                if recur(argument, refer):
+                    return True
+            return recur(target, refer)
 
         case Immediate(value=value):
-            return Immediate(value=value)
+            return False
 
-        case Primitive(operator=operator, left=left, right=right):
-            return Primitive(operator=operator, left=recur(left), right=recur(right))
+        case Primitive(operator=_operator, left=left, right=right):
+            return recur(left, refer) or recur(right, refer)
 
-        case Branch(operator=operator, left=left, right=right, consequent=consequent, otherwise=otherwise):
-            return Branch(
-                operator=operator,
-                left=recur(left),
-                right=recur(right),
-                consequent=recur(consequent),
-                otherwise=recur(otherwise),
-            )
+        case Branch(operator=_operator, left=left, right=right, consequent=consequent, otherwise=otherwise):
+            return recur(left, refer) or recur(right, refer) or recur(consequent, refer) or recur(otherwise, refer)
 
-        case Allocate(count=count):
-            return Allocate(count=count)
+        case Allocate(count=_count):
+            return False
 
-        case Load(base=base, index=index):
-            return Load(base=recur(base), index=index)
+        case Load(base=base, index=_index):
+            return recur(base, refer)
 
-        case Store(base=base, index=index, value=value):
-            return Store(base=recur(base), index=index, value=recur(value))
+        case Store(base=base, index=_index, value=value):
+            return recur(base, refer) or recur(value, refer)
 
         case Begin(effects=effects, value=value):  # pragma: no branch
-            return Begin(effects=[recur(effect) for effect in effects], value=recur(value))
-
-    return term
-
-    
+            for effect in effects:
+                if recur(effect, refer):
+                    return True
+            return recur(value, refer)
 
 
 def dead_code_elim_term(
@@ -74,11 +74,10 @@ def dead_code_elim_term(
 
     match term:
         case Let(bindings=bindings, body=body):
-            return Let(bindings=[(name, recur(value)) 
-                                 for name, value 
-                                 in bindings 
-                                 if ()], 
-                                 body=recur(body))
+            return Let(
+                bindings=[(name, recur(value)) for name, value in bindings if (clean_vars(body, name))],
+                body=recur(body),
+            )
 
         case Reference(name=name):
             return Reference(name=name)
@@ -115,5 +114,3 @@ def dead_code_elim_term(
 
         case Begin(effects=effects, value=value):  # pragma: no branch
             return Begin(effects=[recur(effect) for effect in effects], value=recur(value))
-
-    return term

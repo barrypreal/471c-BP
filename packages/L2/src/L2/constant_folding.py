@@ -47,17 +47,16 @@ def constant_folding_term(
                         case Immediate(value=0), right:
                             return right
 
-                        case [
-                            Primitive(left=Immediate(value=i1), right=left),
-                            Primitive(left=Immediate(value=i2), right=right),
-                        ]:
-                            Primitive(
+                        case Primitive(operator="+", left=Immediate(value=i1), right=left1), Primitive(
+                            operator="+", left=Immediate(value=i2), right=right1
+                        ):
+                            return Primitive(
                                 operator="+",
                                 left=Immediate(value=i1 + i2),
                                 right=Primitive(
                                     operator="+",
-                                    left=left,
-                                    right=right,
+                                    left=left1,
+                                    right=right1,
                                 ),
                             )
 
@@ -74,13 +73,23 @@ def constant_folding_term(
                     return Primitive(operator="*", left=left, right=right)
 
         case Branch(operator=operator, left=left, right=right, consequent=consequent, otherwise=otherwise):
-            return Branch(
-                operator=operator,
-                left=recur(left),
-                right=recur(right),
-                consequent=recur(consequent),
-                otherwise=recur(otherwise),
-            )
+            match operator:
+                case "==":
+                    match recur(left) == recur(right):
+                        case True:
+                            return recur(consequent)
+                        case False:
+                            return recur(otherwise)
+
+                case "<":
+                    match left, right:
+                        case Immediate(value=value1), Immediate(value=value2):
+                            if value1 < value2:
+                                return recur(consequent)
+                            else:
+                                return recur(otherwise)
+                        case _:
+                            return recur(otherwise)
 
         case Allocate(count=count):
             return Allocate(count=count)
@@ -93,5 +102,3 @@ def constant_folding_term(
 
         case Begin(effects=effects, value=value):  # pragma: no branch
             return Begin(effects=[recur(effect) for effect in effects], value=recur(value))
-
-    return term
